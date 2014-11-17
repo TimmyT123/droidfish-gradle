@@ -2,7 +2,7 @@ droidfish-gradle
 ================
 
 Gradle build of Peter Osterlund's [DroidFish](http://web.comhem.se/petero2home/droidfish/) chess program.  This builds the 
-(native) [Stockfish](http://stockfishchess.org/) engine and shared libraries for GTB and RTB [tablebase](http://en.wikipedia.org/wiki/Endgame_tablebase) probing. This project
+(native) [Stockfish](http://stockfishchess.org/) engine and shared libraries for [Gaviota](https://sites.google.com/site/gaviotachessengine/Home) and [Syzygy](https://chessprogramming.wikispaces.com/Syzygy+Bases) [tablebase](http://en.wikipedia.org/wiki/Endgame_tablebase) probing. This project
 uses the Android gradle build system for both Java and C (NDK) compilation.
 
 By default the project will build and install DroidFish with the Stockfish engine for both armeabi-v7a and x86_64 ABIs.
