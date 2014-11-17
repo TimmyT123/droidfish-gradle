@@ -1,0 +1,79 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "21.1.1"
+
+    defaultConfig {
+        applicationId "org.petero.droidfish"
+        minSdkVersion 17
+        targetSdkVersion 21
+
+        // Define ndk.dir in local.properties for NDK build
+        ndk {
+            moduleName "nativeutil"
+        }
+
+        sourceSets.main {
+            jni.srcDirs = []
+            jniLibs.srcDir 'src/main/libs'
+        }
+
+        // Build native libs and stockfish executable for target ABIs
+        // By default builds for armeabi-v7a and x86_64: to change set APP_ABI in src/main/jni/Application.mk
+        // Builds libgbt.so, librtb.so, libnativeutils.so and stockfish executable per ABI type
+        task buildNative(type: Exec, description: 'Compile JNI source via NDK') {
+            def ndkDir = project.plugins.findPlugin('com.android.application').getNdkFolder()
+            commandLine "$ndkDir/ndk-build",
+                        '-C', file('src/main/jni').absolutePath,
+                        '-j', Runtime.runtime.availableProcessors(),
+                        'all',
+                        'NDK_DEBUG=1'
+            finalizedBy 'copyStockfishExeArm', 'copyStockfishExeIntel'
+        }
+
+        task cleanNative(type: Exec, description: 'Clean JNI object files') {
+            def ndkDir = project.plugins.findPlugin('com.android.application').getNdkFolder()
+            commandLine "$ndkDir/ndk-build",
+                        '-C', file('src/main/jni').absolutePath,
+                        'clean'
+        }
+
+        clean.dependsOn 'cleanNative'
+
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn buildNative
+        }
+
+        // Copy stockfish executable for x86_64 abi to assets folder
+        task copyStockfishExeIntel(type: Copy) {
+            from 'src/main/libs/x86_64/stockfish'
+            into 'src/main/assets'
+            rename('stockfish', "stockfish-x86_64")
+        }
+
+        // Copy stockfish executable for armeabi-v7a to assets folder
+        task copyStockfishExeArm(type: Copy) {
+            from 'src/main/libs/armeabi-v7a/stockfish'
+            into 'src/main/assets'
+            rename('stockfish', 'stockfish-armeabi-v7a')
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:21.0.0'
+    // TODO: build CuckooChess from source
+    compile files('libs/CuckooChess.jar')
+}
