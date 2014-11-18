@@ -37,6 +37,7 @@ android {
             commandLine "$ndkDir/ndk-build",
                         '-C', file('src/main/jni').absolutePath,
                         'clean'
+            finalizedBy 'rmStockfishExeIntel', 'rmStockfishExeArm'
         }
 
         clean.dependsOn 'cleanNative'
@@ -45,18 +46,28 @@ android {
             compileTask -> compileTask.dependsOn buildNative
         }
 
-        // Copy stockfish executable for x86_64 abi to assets folder
+        // Copy stockfish executable for x86_64 ABI to assets folder
         task copyStockfishExeIntel(type: Copy) {
             from 'src/main/libs/x86_64/stockfish'
             into 'src/main/assets'
             rename('stockfish', "stockfish-x86_64")
         }
 
-        // Copy stockfish executable for armeabi-v7a to assets folder
+        // Copy stockfish executable for armeabi-v7a ABI to assets folder
         task copyStockfishExeArm(type: Copy) {
             from 'src/main/libs/armeabi-v7a/stockfish'
             into 'src/main/assets'
             rename('stockfish', 'stockfish-armeabi-v7a')
+        }
+
+        // Delete stockfish executable for x86_64 ABI from assets and libs
+	task rmStockfishExeIntel(type: Delete) {
+	    delete 'src/main/assets/stockfish-x86_64', 'src/main/libs/x86_64/stockfish'
+        }
+
+        // Delete stockfish executable for armeabi-v7a ABI from assets and libs
+        task rmStockfishExeArm(type: Delete) {
+            delete 'src/main/assets/stockfish-armeabi-v7a', 'src/main/libs/armeabi-v7a/stockfish'
         }
     }
 
